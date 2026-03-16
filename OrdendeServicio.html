@@ -86,8 +86,18 @@
             <div><label>Email Negocio</label><input type="email" id="confEmailBiz"></div>
         </div>
         <button class="btn-sec" onclick="guardarConfig()">💾 Guardar Datos</button>
-        <div style="margin-top:40px; border: 1px dashed red; padding:15px;">
-            <button class="btn-clear" onclick="localStorage.clear(); location.reload();">🗑️ BORRAR TODO (PRUEBAS)</button>
+       <div style="margin-top: 40px; padding: 15px; border: 2px dashed var(--danger); border-radius: 8px;">
+    <h3 style="color: var(--danger); margin-top: 0;">⚠️ Zona de Peligro</h3>
+    <p style="font-size: 0.8em; color: #666;">Esto borrará permanentemente todos los clientes, el contador de folios y la configuración del negocio.</p>
+    <button class="btn-clear" style="padding: 10px 20px; font-size: 0.9em;" onclick="resetSistema()">BORRAR TODO Y REINICIAR SISTEMA</button>
+</div>
+
+        <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
+            <h3>👥 Clientes</h3>
+            <table id="tablaClientes">
+                <thead><tr><th>RUT</th><th>Nombre</th><th>Email</th></tr></thead>
+                <tbody id="listaClientesBody"></tbody>
+            </table>
         </div>
     </div>
 </div>
