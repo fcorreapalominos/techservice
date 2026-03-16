@@ -3,128 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Técnica Pro - Automatizado</title>
+    <title>Gestión Técnica Pro - Historial S/N</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --bg: #f4f7f6; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
         nav { background: var(--primary); display: flex; justify-content: center; padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 100; }
-        nav button { background: none; border: 1px solid white; color: white; padding: 8px 20px; cursor: pointer; border-radius: 5px; }
+        nav button { background: none; border: 1px solid white; color: white; padding: 8px 15px; cursor: pointer; border-radius: 5px; font-size: 0.9em; }
         nav button.active { background: white; color: var(--primary); font-weight: bold; }
+        
         .container { max-width: 900px; margin: 20px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .section { display: none; }
         .section.active { display: block; }
+        
         .form-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 2; }
-        .rut-group { display: flex; gap: 5px; align-items: flex-end; }
-        .dv-input { width: 50px !important; text-align: center; }
         label { font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 5px; color: #555; }
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        input[readonly] { background-color: #eee; cursor: not-allowed; }
-        textarea { resize: none; overflow: hidden; min-height: 80px; }
-        .signature-box { border: 2px solid #333; width: 100%; height: 65px; background: #fafafa; border-radius: 5px; cursor: crosshair; }
+        input[readonly] { background-color: #f0f0f0; }
+        
+        .signature-box { border: 2px solid #333; width: 100%; height: 65px; background: #fafafa; border-radius: 5px; }
         .btn-main { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 25px; font-weight: bold; }
         .btn-sec { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
         .btn-clear { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.75em; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
-        th { background: #f8f9fa; }
+        th { background: #f8f9fa; color: var(--primary); }
+        .historial-item { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid var(--secondary); }
     </style>
 </head>
 <body>
 
 <nav>
     <button onclick="showSection('registro')" id="btn-reg" class="active">Nueva Orden</button>
-    <button onclick="showSection('config')" id="btn-conf">⚙️ Configuración / Clientes</button>
+    <button onclick="showSection('historial')" id="btn-hist">🔍 Historial S/N</button>
+    <button onclick="showSection('config')" id="btn-conf">⚙️ Configuración</button>
 </nav>
 
 <div class="container">
     <div id="registro" class="section active">
-        <h2>📝 Orden de Trabajo <span id="displayFolio" style="color:var(--secondary); float:right;">Cargando...</span></h2>
+        <h2>📝 Orden de Trabajo <span id="displayFolio" style="color:var(--secondary); float:right;">N° 000000</span></h2>
         <form id="repairForm">
             <div class="form-layout">
-                <div class="full-width">
-                    <label>Nombre Completo del Cliente</label>
-                    <input type="text" id="nombre" required>
-                </div>
-                <div class="rut-group">
-                    <div style="flex: 1;">
-                        <label>RUT</label>
-                        <input type="number" id="rutBody" oninput="buscarCliente()">
-                    </div>
-                    <div>
-                        <label>DV</label>
-                        <input type="text" id="rutDV" class="dv-input" maxlength="1">
-                    </div>
-                </div>
-                <div>
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="email" required>
-                </div>
-
-                <div>
-                    <label>Fecha de Ingreso (Auto)</label>
-                    <input type="text" id="fechaSolicitud" readonly>
-                </div>
-                <div>
-                    <label>Tipo de Equipo</label>
-                    <input type="text" id="tipoEquipo" required placeholder="Ej: Notebook">
-                </div>
-                <div>
-                    <label>N° de Serie (S/N)</label>
-                    <input type="text" id="nSerie">
-                </div>
-                <div>
-                    <label>Dirección MAC</label>
-                    <input type="text" id="macAddress" maxlength="17" placeholder="00:00:00:00:00:00">
-                </div>
-
-                <div class="full-width">
-                    <label>Accesorios</label>
-                    <input type="text" id="accesorios">
-                </div>
-                
-                <div class="full-width">
-                    <label>Descripción de la Falla</label>
-                    <textarea id="descripcion" oninput="autoResize(this)"></textarea>
-                </div>
-
+                <div class="full-width"><label>Nombre Cliente</label><input type="text" id="nombre" required></div>
+                <div style="display:flex; gap:5px;"><input type="number" id="rutBody" placeholder="RUT" oninput="buscarCliente()" style="flex:1;"><input type="text" id="rutDV" placeholder="DV" style="width:50px;"></div>
+                <div><input type="email" id="email" placeholder="Correo Electrónico" required></div>
+                <div><label>Fecha (Auto)</label><input type="text" id="fechaSolicitud" readonly></div>
+                <div><label>Tipo de Equipo</label><input type="text" id="tipoEquipo" required></div>
+                <div><label>N° de Serie (S/N)</label><input type="text" id="nSerie" required></div>
+                <div><label>MAC Address</label><input type="text" id="macAddress" maxlength="17"></div>
+                <div class="full-width"><label>Accesorios</label><input type="text" id="accesorios"></div>
+                <div class="full-width"><label>Falla</label><textarea id="descripcion" oninput="autoResize(this)"></textarea></div>
                 <div style="grid-column: 2;">
-                    <label>Firma del Cliente</label>
+                    <label>Firma Cliente</label>
                     <canvas id="signature-pad" class="signature-box"></canvas>
-                    <div style="text-align: right;">
-                        <button type="button" class="btn-clear" onclick="clearCanvas()">Borrar</button>
-                    </div>
+                    <button type="button" class="btn-clear" onclick="clearCanvas()">Borrar</button>
                 </div>
             </div>
-            <button type="submit" class="btn-main">✅ FINALIZAR Y GENERAR PDF</button>
+            <button type="submit" class="btn-main">✅ GENERAR ORDEN</button>
         </form>
     </div>
 
+    <div id="historial" class="section">
+        <h2>🔍 Consulta de Historial por S/N</h2>
+        <p>Ingresa el número de serie para ver todos los ingresos previos de este equipo.</p>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="searchSN" placeholder="Ej: ABC123456" style="flex:1; border: 2px solid var(--secondary);">
+            <button class="btn-sec" style="margin-top:0;" onclick="consultarHistorial()">BUSCAR</button>
+        </div>
+        <div id="resultadosHistorial">
+            <p style="color:#888; text-align:center;">No se ha realizado ninguna búsqueda aún.</p>
+        </div>
+    </div>
+
     <div id="config" class="section">
-	
         <h2>⚙️ Configuración</h2>
         <div class="form-layout">
-            <div><label>Nombre Comercial</label><input type="text" id="confNombre"></div>
-            <div><label>Logo</label><input type="file" id="confLogo" accept="image/*"></div>
+            <div><label>Nombre Negocio</label><input type="text" id="confNombre"></div>
             <div><label>Dirección</label><input type="text" id="confDireccion"></div>
             <div><label>Teléfono</label><input type="text" id="confTelefono"></div>
-            <div class="full-width"><label>Email del Negocio</label><input type="email" id="confEmailBiz"></div>
+            <div><label>Email Negocio</label><input type="email" id="confEmailBiz"></div>
         </div>
-        <button class="btn-sec" onclick="guardarConfig()">💾 Guardar Configuración</button>
-		
-		<div style="margin-top: 40px; padding: 15px; border: 2px dashed var(--danger); border-radius: 8px;">
-    <h3 style="color: var(--danger); margin-top: 0;">⚠️ Zona de Peligro</h3>
-    <p style="font-size: 0.8em; color: #666;">Esto borrará permanentemente todos los clientes, el contador de folios y la configuración del negocio.</p>
-    <button class="btn-clear" style="padding: 10px 20px; font-size: 0.9em;" onclick="resetSistema()">BORRAR TODO Y REINICIAR SISTEMA</button>
-</div>
-
-        <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
-            <h3>👥 Clientes</h3>
-            <table id="tablaClientes">
-                <thead><tr><th>RUT</th><th>Nombre</th><th>Email</th></tr></thead>
-                <tbody id="listaClientesBody"></tbody>
-            </table>
+        <button class="btn-sec" onclick="guardarConfig()">💾 Guardar Datos</button>
+        <div style="margin-top:40px; border: 1px dashed red; padding:15px;">
+            <button class="btn-clear" onclick="localStorage.clear(); location.reload();">🗑️ BORRAR TODO (PRUEBAS)</button>
         </div>
     </div>
 </div>
@@ -134,40 +97,55 @@
     const canvas = document.getElementById('signature-pad');
     const ctx = canvas.getContext('2d');
     let drawing = false;
-    let logoData = localStorage.getItem('bizLogo') || null;
 
-    // --- AUTOMATIZACIÓN DE FECHA Y MAC ---
     window.onload = () => {
-        // Cargar Config
+        // Cargar Datos
         document.getElementById('confNombre').value = localStorage.getItem('bizName') || "Servicio Técnico";
         document.getElementById('confDireccion').value = localStorage.getItem('bizDir') || "";
         document.getElementById('confTelefono').value = localStorage.getItem('bizTel') || "";
         document.getElementById('confEmailBiz').value = localStorage.getItem('bizEmailBiz') || "";
         
-        // Fecha Actual dd-mm-yyyy
+        // Fecha Actual
         const hoy = new Date();
-        const d = String(hoy.getDate()).padStart(2, '0');
-        const m = String(hoy.getMonth() + 1).padStart(2, '0');
-        const y = hoy.getFullYear();
-        document.getElementById('fechaSolicitud').value = `${d}-${m}-${y}`;
+        document.getElementById('fechaSolicitud').value = `${String(hoy.getDate()).padStart(2,'0')}-${String(hoy.getMonth()+1).padStart(2,'0')}-${hoy.getFullYear()}`;
         
         actualizarFolioVista();
-        actualizarTablaClientes();
     };
-	
-	function resetSistema() {
-    if(confirm("¿Estás absolutamente seguro? Esta acción no se puede deshacer y perderás todos los datos guardados.")) {
-        localStorage.clear(); // Esto borra toda la memoria del sitio
-        alert("Sistema reiniciado con éxito.");
-        location.reload(); // Recarga la página para aplicar los cambios
-    }
-}
 
-    // Formateador de MAC automática
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('btn-' + id.substring(0,4)).classList.add('active');
+    }
+
+    // --- LÓGICA DE HISTORIAL ---
+    function consultarHistorial() {
+        const sn = document.getElementById('searchSN').value.trim().toUpperCase();
+        const historialGlobal = JSON.parse(localStorage.getItem('db_historial') || '[]');
+        const resultados = historialGlobal.filter(reg => reg.sn === sn);
+        const container = document.getElementById('resultadosHistorial');
+
+        if (resultados.length === 0) {
+            container.innerHTML = `<p style="color:red; text-align:center;">No se encontraron registros para el S/N: ${sn}</p>`;
+            return;
+        }
+
+        container.innerHTML = `<h3>Registros encontrados (${resultados.length}):</h3>`;
+        resultados.reverse().forEach(reg => {
+            container.innerHTML += `
+                <div class="historial-item">
+                    <strong>Folio: ${reg.folio} | Fecha: ${reg.fecha}</strong><br>
+                    <small>Cliente: ${reg.cliente} | RUT: ${reg.rut}</small><hr>
+                    <strong>Falla reportada:</strong> ${reg.falla}
+                </div>`;
+        });
+    }
+
+    // MAC Formatter
     document.getElementById('macAddress').addEventListener('input', function(e) {
         let r = e.target.value.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
-        let formatted = r.match(/.{1,2}/g)?.join(':') || r;
-        e.target.value = formatted.substring(0, 17);
+        e.target.value = (r.match(/.{1,2}/g)?.join(':') || r).substring(0, 17);
     });
 
     function guardarConfig() {
@@ -178,25 +156,9 @@
         alert("Configuración guardada.");
     }
 
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    function showSection(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.getElementById(id === 'registro' ? 'btn-reg' : 'btn-conf').classList.add('active');
-    }
-
-    function actualizarTablaClientes() {
-        const clientes = JSON.parse(localStorage.getItem('db_clientes') || '{}');
-        const tbody = document.getElementById('listaClientesBody');
-        tbody.innerHTML = '';
-        for (let rut in clientes) {
-            tbody.innerHTML += `<tr><td>${rut}-${clientes[rut].dv}</td><td>${clientes[rut].nombre}</td><td>${clientes[rut].email}</td></tr>`;
-        }
+    function actualizarFolioVista() {
+        const f = (parseInt(localStorage.getItem('ultimoFolio') || 0) + 1).toString().padStart(6, '0');
+        document.getElementById('displayFolio').innerText = "N° " + f;
     }
 
     function buscarCliente() {
@@ -210,8 +172,8 @@
     }
 
     function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-    // Firma
+    
+    // Firma Logic
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
@@ -224,74 +186,52 @@
     canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); });
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); });
 
-    document.getElementById('confLogo').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (event) => { logoData = event.target.result; localStorage.setItem('bizLogo', logoData); };
-        reader.readAsDataURL(e.target.files[0]);
-    });
-
-    function actualizarFolioVista() {
-        const f = (parseInt(localStorage.getItem('ultimoFolio') || 0) + 1).toString().padStart(6, '0');
-        document.getElementById('displayFolio').innerText = "N° " + f;
-    }
-
+    // --- PDF Y GUARDADO ---
     document.getElementById('repairForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const doc = new jsPDF();
         const folio = (parseInt(localStorage.getItem('ultimoFolio') || 0) + 1).toString().padStart(6, '0');
-        const bizName = localStorage.getItem('bizName') || "EMPRESA";
-        const bizDir = localStorage.getItem('bizDir') || "";
-        const bizTel = localStorage.getItem('bizTel') || "";
-        const bizEmail = localStorage.getItem('bizEmailBiz') || "";
-        const fechaDoc = document.getElementById('fechaSolicitud').value;
+        const sn = document.getElementById('nSerie').value.trim().toUpperCase();
+        const fechaActual = document.getElementById('fechaSolicitud').value;
+        const nombreCliente = document.getElementById('nombre').value;
+        const fallaText = document.getElementById('descripcion').value;
 
-        // Estilo PDF
-        doc.setFillColor(240, 240, 240);
-        doc.roundedRect(140, 10, 55, 20, 3, 3, 'F');
-        if (logoData) doc.addImage(logoData, 'PNG', 15, 10, 22, 22);
-        doc.setFontSize(16); doc.setFont(undefined, 'bold');
-        doc.text(bizName.toUpperCase(), 42, 22);
-        doc.setFontSize(14); doc.setTextColor(231, 76, 60);
-        doc.text(`ORDEN N° ${folio}`, 145, 23);
+        // 1. Guardar en Historial por S/N
+        let historialGlobal = JSON.parse(localStorage.getItem('db_historial') || '[]');
+        historialGlobal.push({
+            sn: sn,
+            folio: folio,
+            fecha: fechaActual,
+            cliente: nombreCliente,
+            rut: document.getElementById('rutBody').value,
+            falla: fallaText
+        });
+        localStorage.setItem('db_historial', JSON.stringify(historialGlobal));
 
-        doc.setTextColor(0); doc.setDrawColor(200);
-        doc.roundedRect(15, 40, 180, 42, 2, 2, 'S');
-        doc.setFontSize(11); doc.setFont(undefined, 'bold');
-        doc.text(document.getElementById('nombre').value.toUpperCase(), 20, 50);
-        doc.setFont(undefined, 'normal'); doc.setFontSize(9);
-        doc.text(`RUT: ${document.getElementById('rutBody').value}-${document.getElementById('rutDV').value}`, 20, 58);
-        doc.text(`EMAIL: ${document.getElementById('email').value}`, 20, 65);
-        doc.text(`FECHA: ${fechaDoc}`, 120, 58);
+        // 2. Guardar Cliente
+        let clientes = JSON.parse(localStorage.getItem('db_clientes') || '{}');
+        clientes[document.getElementById('rutBody').value] = {
+            nombre: nombreCliente, dv: document.getElementById('rutDV').value, email: document.getElementById('email').value
+        };
+        localStorage.setItem('db_clientes', JSON.stringify(clientes));
 
-        doc.roundedRect(15, 90, 180, 40, 2, 2, 'S');
-        doc.text(`EQUIPO: ${document.getElementById('tipoEquipo').value}`, 20, 100);
-        doc.text(`S/N: ${document.getElementById('nSerie').value || 'N/A'}`, 20, 108);
-        doc.text(`MAC: ${document.getElementById('macAddress').value || 'N/A'}`, 120, 108);
-        doc.text(`ACCESORIOS: ${document.getElementById('accesorios').value}`, 20, 116, {maxWidth: 170});
-
-        doc.roundedRect(15, 138, 180, 55, 2, 2, 'S');
-        doc.text(document.getElementById('descripcion').value, 20, 148, {maxWidth: 170});
-
-        const firmaImg = canvas.toDataURL('image/png');
-        doc.addImage(firmaImg, 'PNG', 140, 230, 45, 12);
-        doc.line(135, 245, 185, 245);
-        doc.setFontSize(8); doc.text("FIRMA CLIENTE", 150, 250);
-
-        doc.setDrawColor(44, 62, 80); doc.line(15, 275, 195, 275);
-        doc.text(`${bizName} | ${bizDir} | Tel: ${bizTel} | ${bizEmail}`, 105, 282, {align: "center"});
+        // 3. Generar PDF (Resumen visual)
+        doc.setFillColor(240, 240, 240); doc.roundedRect(140, 10, 55, 20, 3, 3, 'F');
+        doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.text(localStorage.getItem('bizName')?.toUpperCase() || "SERVICIO", 15, 20);
+        doc.setTextColor(231, 76, 60); doc.text(`ORDEN N° ${folio}`, 145, 23);
+        
+        doc.setTextColor(0); doc.setFontSize(10); doc.setFont(undefined, 'normal');
+        doc.text(`Cliente: ${nombreCliente}`, 15, 45);
+        doc.text(`S/N Equipo: ${sn}`, 15, 55);
+        doc.text(`Fecha Ingreso: ${fechaActual}`, 15, 65);
+        doc.text(`Falla: ${fallaText}`, 15, 80, {maxWidth: 170});
 
         doc.save(`Orden_${folio}.pdf`);
         localStorage.setItem('ultimoFolio', parseInt(folio));
-        
-        let clientes = JSON.parse(localStorage.getItem('db_clientes') || '{}');
-        clientes[document.getElementById('rutBody').value] = {
-            nombre: document.getElementById('nombre').value,
-            dv: document.getElementById('rutDV').value,
-            email: document.getElementById('email').value
-        };
-        localStorage.setItem('db_clientes', JSON.stringify(clientes));
         location.reload();
     });
+
+    function autoResize(t) { t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
 </script>
 </body>
 </html>
